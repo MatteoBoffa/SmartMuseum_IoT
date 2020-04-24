@@ -1,0 +1,5 @@
+[{"RoomName":"Impressionism","popularity":10,"urlImage":"","id":1},
+{"RoomName":"Expressionism","popularity":12,"urlImage":"","id":2},
+{"RoomName":"Neo-Classicism","popularity":8,"nPaintings":5,"urlImage":"","id":3},
+{"RoomName":"Romanticism","popularity":6,"nPaintings":3,"urlImage":"","id":4},
+{"RoomName":"Realism","popularity":2,"nPaintings":2,"urlImage":"","id":5}]
