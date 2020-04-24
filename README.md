@@ -9,6 +9,6 @@ Notes to run the project:
 - two databases are required: instructions on their names and tables' composition can be found in the DBs folder
 - the provided version works with five Estimote Beacons whose MAC addresses are inserted inside one of the databases; to add some more or change them, just modify such data in the DB
 
-Videos
+Videos:
 - PROMO: https://www.youtube.com/watch?v=YgoPoyFLknk
 - DEMO: https://www.youtube.com/watch?v=mky62tQ42YM 
