@@ -1,5 +1,5 @@
-# IoT_project
-Smart Museum
+# IoT project: Smart Museum
+
 
 Notes to run the project
 - the Catalog needs to be run first
