@@ -4,22 +4,17 @@ import re
 from datetime import datetime 
 
 def addData(user,passwd, json_body, tableName):
-	#print("QUIII")
 	try:
 		conn=mysql.connector.connect(host="localhost", user=user, passwd=passwd)
 		mycursor1=conn.cursor()
 		sqlForm="USE dataset_Database"
 		toReturn=[]
-		#print("QUIII")
 		try:
-			#print("CONNECTION OPENED")
 			mycursor1.execute(sqlForm)
 			if tableName=='temperatures':
 				value='temperature'
 			else:
 				value="macEstimote"
-			#print(json_body['timestamp'])
-			#print(type(json_body['timestamp']))
 			datetime_object = datetime.strptime(json_body['timestamp'], '%d-%m-%Y %H:%M:%S')
 			sql_Insert = "INSERT INTO {} (room, {}, timestamp) VALUES (%s, %s, %s)".format(tableName, value)
 			if tableName!="temperatures":
@@ -59,11 +54,12 @@ def selectLastDay(user,passwd,tableName):
 			value="macEstimote"
 		else:
 			value="temperature"
-		#RETURNING EMPTY LIST IF NO RESULTS ARE OBTAINED (PROBLEMS CONSULTING DATABASE)
+		#RETURNING False IF PROBLEMS CONSULTING DATABASE
+		#RETURNING EMPTY LIST IF NO RESULTS ARE AVAILABLE
 		try:
 			mycursor1.execute(sqlForm)
-			#sql_Select="SELECT id, room, {}, DATE_FORMAT(timestamp, '%Y-%m-%d %T')  FROM {} WHERE TIMESTAMPDIFF(HOUR,timestamp, '{}')<=24".format(value,tableName, now)
-			sql_Select="SELECT id, room, {}, DATE_FORMAT(timestamp, '%Y-%m-%d %T')  FROM {} WHERE TIMESTAMPDIFF(MINUTE,timestamp, '{}')<=30".format(value,tableName, now)
+			sql_Select="SELECT id, room, {}, DATE_FORMAT(timestamp, '%Y-%m-%d %T')  FROM {}\
+			 WHERE TIMESTAMPDIFF(HOUR,timestamp, '{}')<=24".format(value,tableName, now)
 			try:
 				mycursor1.execute(sql_Select)
 				myresult = mycursor1.fetchall()	
@@ -89,10 +85,12 @@ def selectAll(user,passwd,tableName):
 			value="macEstimote"
 		else:
 			value="temperature"
-		#RETURNING EMPTY LIST IF NO RESULTS ARE OBTAINED (PROBLEMS CONSULTING DATABASE)
+		#RETURNING False IF PROBLEMS CONSULTING DATABASE
+		#RETURNING EMPTY LIST IF NO RESULTS ARE AVAILABLE
 		try:
 			mycursor1.execute(sqlForm)
-			sql_Select="SELECT id, room, {}, DATE_FORMAT(timestamp, '%Y-%m-%d %T')  FROM {} WHERE TIMESTAMPDIFF(HOUR,timestamp, '{}')<=48".format(value,tableName, now)
+			sql_Select="SELECT id, room, {}, DATE_FORMAT(timestamp, '%Y-%m-%d %T')  FROM {}\
+			 WHERE TIMESTAMPDIFF(HOUR,timestamp, '{}')<=48".format(value,tableName, now)
 			try:
 				mycursor1.execute(sql_Select)
 				myresult = mycursor1.fetchall()	
@@ -121,7 +119,8 @@ def selectLastPosition(user,passwd, macEstimote):
 		now=datetime.now()
 		try:
 			mycursor1.execute(sqlForm)
-			sql_Select="SELECT id, room, macEstimote, DATE_FORMAT(timestamp, '%Y-%m-%d %T') FROM positions WHERE macEstimote='{}' AND TIMESTAMPDIFF(MINUTE,timestamp, '{}')<=5 ORDER BY timestamp DESC".format(macEstimote, now)
+			sql_Select="SELECT id, room, macEstimote, DATE_FORMAT(timestamp, '%Y-%m-%d %T') FROM positions\
+			 WHERE macEstimote='{}' AND TIMESTAMPDIFF(MINUTE,timestamp, '{}')<=5 ORDER BY timestamp DESC".format(macEstimote, now)
 			try:
 				mycursor1.execute(sql_Select)
 				myresult = mycursor1.fetchall()
@@ -138,24 +137,22 @@ def selectLastPosition(user,passwd, macEstimote):
 		print("Problem: something went wrong here!: " + str(err))
 	return toReturn
 
-def removeOutOfDate(user,passwd, actualTime):
-	#AT THE MOMENT WE'RE JUST TESTING --> STILL WORKING ON SECONDS!
+def removeOutOfDate(user,passwd, actualTime, deletionTime):
 	try:
 		conn=mysql.connector.connect(host="localhost", user=user, passwd=passwd)
 		mycursor1=conn.cursor()
 		sqlForm="USE dataset_Database"
 		try:
-			#print("TILL HERE OK!")
+			#SELECT TEMPERATURE OUT OF DATE
 			mycursor1.execute(sqlForm)
 			now=actualTime
-			sql_Select_Out= "SELECT id, TIMESTAMPDIFF(second,timestamp, '{}') as diffTime FROM temperatures WHERE TIMESTAMPDIFF(HOUR,timestamp, '{}')>48".format(now,now)
+			sql_Select_Out= "SELECT id, TIMESTAMPDIFF(second,timestamp, '{}') as diffTime FROM temperatures\
+			 WHERE TIMESTAMPDIFF(HOUR,timestamp, '{}')>{}".format(now,now,deletionTime)
 			try:
-				#print("TILL HERE OK 2!")
 				mycursor1.execute(sql_Select_Out)
 				myresult = mycursor1.fetchall()
-				#print("OBJECT IN THE LIST ARE "+str(myresult))
 				for ob in myresult:
-					#print(ob[1])
+					#DELETE TEMPERATURES OUT OF DATE
 					sql_Delete_query = "DELETE FROM temperatures WHERE id='{}';".format(ob[0])
 					try:
 						mycursor1.execute(sql_Delete_query)
@@ -167,13 +164,15 @@ def removeOutOfDate(user,passwd, actualTime):
 
 			except Exception as e:
 				print("Could not select timestamp differences!: " + str(e))
-
-			sql_Select_Out= "SELECT id, TIMESTAMPDIFF(second,timestamp, '{}') as diffTime FROM positions WHERE TIMESTAMPDIFF(HOUR,timestamp, '{}')>48".format(now,now)
+			
+			#SELECT POSITIONS OUT OF DATE
+			sql_Select_Out= "SELECT id, TIMESTAMPDIFF(second,timestamp, '{}') as diffTime FROM positions\
+			 WHERE TIMESTAMPDIFF(HOUR,timestamp, '{}')>{}".format(now,now,deletionTime)
 			try:
 				mycursor1.execute(sql_Select_Out)
 				myresult = mycursor1.fetchall()
 				for ob in myresult:
-					#print(ob[1])
+					#DELETE POSITIONS OUT OF DATE
 					sql_Delete_query = "DELETE FROM positions WHERE id='{}';".format(ob[0])
 					try:
 						mycursor1.execute(sql_Delete_query)
@@ -198,7 +197,6 @@ def checkValidityPut(user,passwd,json_body, tableName):
 	-If the Mac has the correct format
 	-If the datetime is actually a datetime (format again)
 	"""
-	#print("ENTERED HERE (CHECK VALIDITY)")
 	if list(json_body.keys())!=['room','value','timestamp']:
 		return False
 	if tableName=='temperatures':
@@ -239,8 +237,7 @@ def checkValidityPut(user,passwd,json_body, tableName):
 					if timestampDifference.total_seconds()<=4:
 						print("ERROR; INCONSISTENT DATA")
 						return False
-			#else:
-				#print("NO PREVIOUS RELEVATION WERE FOUND --> OK")
+
 	pat = re.compile(r'[0-9]{2}-[0-9]{2}-[0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}')
 	test = pat.match(json_body['timestamp'])
 	if test is None:

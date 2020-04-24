@@ -7,39 +7,37 @@ import socket
 
 class WhereIAmServer(object):
 	def __init__(self):
-		file_content=json.load(open('../confFile.json'))
 		file_content2=json.load(open('confFileWhereIAm.json'))
+		self.catalogAddress=file_content2.get('ipCatalog')
+		self.catalogPort=int(file_content2.get('catalogPort'))
+		self.catalogAddress=file_content2.get('ipCatalog')
 		self.port=int(file_content2.get('port'))
-		self.catalogPort=int(file_content.get('catalogPort'))
-		#self.catalogAddress=file_content2.get('ipCatalog')
-		#self.catalogPort=int(file_content2.get('catalogPort'))
-		self.catalogAddress=file_content.get('ipCatalog')
 		self.DBAddress=""
 		self.DBPort=""
 		s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		s.connect(("8.8.8.8", 80))
 		self.address=s.getsockname()[0]
-		#print(self.address)
 	
 class WhereIAmRest(object):
 	exposed=True	
 	def __init__(self):
-		
 		self.whereIAmServer=WhereIAmServer()
+
 	def GET(self,*uri,**params):
 		rdb=json.dumps({"value":False})
 		if len(params.values())!=1:
 			raise cherrypy.HTTPError(400, "ERROR: missing parameters")
 		if list(params.keys())[0]!="chatId":
 			raise cherrypy.HTTPError(400, "ERROR: missing parameters")			
-		#richiedo il mac con la chatId dal catalog
 		try:
+			#Contacting the Catalog to have the mac_address corresponding to the chat_id passed
 			r=requests.get('http://'+str(self.whereIAmServer.catalogAddress)+':'+str(self.whereIAmServer.catalogPort)+'/macRequest?chatToSearch='+str(params["chatId"]))
 			if list(r.json().keys())[0]!='mac':
 				raise cherrypy.HTTPError(400, "ERROR with parameters")			
 			elif r.json()['mac']!=False:
 				mac=r.json()['mac'][0][0]
 				try:
+					#If the mac was found, contact the DBServer and ask for its last position!
 					rdb1=requests.get('http://'+str(self.whereIAmServer.DBAddress)+':'+str(self.whereIAmServer.DBPort)+'/whereIAm?macToSearch='+str(mac))
 					print(rdb1.json()["value"])
 					rdb=json.dumps({"value":rdb1.json()["value"]})
@@ -62,7 +60,6 @@ class WhereIAmRest(object):
 		return rdb
 
 if __name__=="__main__":
-	#inizializzazione 
 	whereIAmServerRest=WhereIAmRest()
 	conf={
 		'/':{
@@ -76,6 +73,7 @@ if __name__=="__main__":
 	countException=0
 	while True and countException<3:
 		try:
+			#Every n seconds has to contact both the catalog and, if possible, the database!
 			catalogAddress=whereIAmServerRest.whereIAmServer.catalogAddress
 			catalogPort=whereIAmServerRest.whereIAmServer.catalogPort
 			ip=whereIAmServerRest.whereIAmServer.address
@@ -88,12 +86,10 @@ if __name__=="__main__":
 				whereIAmServerRest.whereIAmServer.DBPort=r.json()['port']				
 				try:
 					rdb=requests.get('http://'+str(whereIAmServerRest.whereIAmServer.DBAddress)+':'+str(whereIAmServerRest.whereIAmServer.DBPort))
-					#print(rdb.text)
 				except requests.exceptions.RequestException as e:
 					print(e)
 			else:
 				print('\tDB not connected yet')
-			#print("Going to sleep for "+str(timeSleep))
 		except requests.exceptions.RequestException as e:
 			countException+=1
 			print(e)

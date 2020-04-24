@@ -13,13 +13,10 @@ maxScore=0
 
 class GeneratePathServer(object):
 	def __init__(self):
-		file_content=json.load(open('../confFile.json'))
-		self.catalogAddress=file_content.get('ipCatalog')
-		self.catalogPort=int(file_content.get('catalogPort'))
 		file_content2=json.load(open('confFileGeneratePath.json'))
 		self.port=int(file_content2.get('port'))
-		#self.catalogAddress=file_content2.get('ipCatalog')
-		#self.catalogPort=int(file_content2.get('catalogPort'))
+		self.catalogAddress=file_content2.get('ipCatalog')
+		self.catalogPort=int(file_content2.get('catalogPort'))
 		self.DBAddress=""
 		self.DBPort=""
 		s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -27,22 +24,13 @@ class GeneratePathServer(object):
 		self.address=s.getsockname()[0]
 
 	def enterRecursion(self,roomsToVisit,timeLeft, actualRoom, sorted_d, points):
-		#print(actualRoom)
 		global finalPath
 		global maxScore
-
+		#Recursive method to calculate the optimal path
 		if points>maxScore:
 			finalPath=deepcopy(roomsToVisit)
 			maxScore=points
-			"""
-			print("FOUND")
-			print("WITH THE FOLLOWING SCORE:")
-			print(maxScore)
-			print("WITH FOLLOWING PATH")
-			print(roomsToVisit)
-			"""
 		for key in sorted_d.keys():
-			#print("The key is "+str(key)+" while the value is "+ str(actualRoom))
 			if str(key)!=str(actualRoom):
 				
 				if key not in roomsToVisit:
@@ -70,7 +58,6 @@ class GeneratePathRest(object):
 		global maxScore
 		toReturn=json.dumps({"value":False})
 		if len(params)!=1:
-			#print("STOPPED HERE!")
 			raise cherrypy.HTTPError(400, "ERROR: bad request")	
 		else:
 			try:
@@ -123,12 +110,10 @@ class GeneratePathRest(object):
 						print("Status code: "+str(rdb.status_code))
 						print(e)
 			except:
-				#print("STOPPED HERE ON THE OTHER HAND")
 				raise cherrypy.HTTPError(400, "ERROR: bad request")			
 		return toReturn
 
 if __name__=="__main__":
-	#inizializzazione 
 	generatePathServerRest=GeneratePathRest()
 	conf={
 		'/':{
@@ -154,12 +139,10 @@ if __name__=="__main__":
 				generatePathServerRest.generatePathServer.DBPort=r.json()['port']				
 				try:
 					rdb=requests.get('http://'+str(generatePathServerRest.generatePathServer.DBAddress)+':'+str(generatePathServerRest.generatePathServer.DBPort))
-					#print(rdb.text)
 				except requests.exceptions.RequestException as e:
 					print(e)
 			else:
 				print('\tDB not connected yet')
-			#print("Going to sleep for "+str(timeSleep))
 		except requests.exceptions.RequestException as e:
 			countException+=1
 			print(e)

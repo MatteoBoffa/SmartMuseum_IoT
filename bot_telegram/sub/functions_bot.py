@@ -1,8 +1,6 @@
 
 import requests
 
-
-
 def extractInfoRoom(roomInfo):
 	info=[]
 	for room in roomInfo:

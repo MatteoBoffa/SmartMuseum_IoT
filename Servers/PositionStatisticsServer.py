@@ -9,12 +9,9 @@ import sub.PositionThread as pt
 
 class PositionStatisticServer(object):
 	def __init__(self):
-		file_content=json.load(open('../confFile.json'))
-		self.catalogAddress=file_content.get('ipCatalog')
-		self.catalogPort=int(file_content.get('catalogPort'))
 		file_content2=json.load(open('confFilePositionStat.json'))
-		#self.catalogAddress=file_content2.get('ipCatalog')
-		#self.catalogPort=int(file_content2.get('catalogPort'))
+		self.catalogAddress=file_content2.get('ipCatalog')
+		self.catalogPort=int(file_content2.get('catalogPort'))
 		self.DBAddress=""
 		self.DBPort=""
 		s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -22,18 +19,18 @@ class PositionStatisticServer(object):
 		self.address=s.getsockname()[0]
 
 	def update_freeboard(self):
+		#See comments in TemperatureStatisticsServer
 		DBAdress=self.DBAddress
 		DBPort=self.DBPort
-		#print("\nUpdating SmartMuseum_Gen...")
+		print("\nUpdating SmartMuseum_Gen...")
 		a=pt.GetWithThread("all",1,"SmartMuseum_rooms_tot_rep","SmartMuseum_rooms_tot_nr",DBAdress,DBPort)
 		a.start()
-		#print("Updating SmartMuseum_Cur...")
+		print("Updating SmartMuseum_Cur...")
 		b=pt.GetWithThread("today",0,"SmartMuseum_rooms_day_rep","SmartMuseum_rooms_day_nr",DBAdress,DBPort)
 		b.start()
 		return a.ident,b.ident
 
 if __name__=="__main__":
-	#inizializzazione 
 	positionStatisticServer=PositionStatisticServer()
 	countException=0
 	threadId1=0
@@ -57,7 +54,7 @@ if __name__=="__main__":
 					print(e)
 			else:
 				print('\tDB not connected yet')
-			#print("Going to sleep for "+str(timeSleep))
+			print("Going to sleep for "+str(timeSleep))
 		except requests.exceptions.RequestException as e:
 			countException+=1
 			print(e)

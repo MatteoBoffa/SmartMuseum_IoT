@@ -9,22 +9,11 @@ def addDevice(mycursor, conn, json_body, timestamp, port):
 	try:
 		mycursor.execute(sql, val)
 		conn.commit()
-		#print ("Device added. It was a "+json_body['whoIAm'])
 		if json_body['whoIAm']=='telegramBot':
 			initializedTelegramBot(mycursor, conn)
-		"""
-		sql2="SELECT * FROM credentialsServer"
-		try:
-			mycursor.execute(sql2)
-			myresult = mycursor.fetchall()
-			print("RESULTS ARE: ")
-			print(myresult)
-		except Exception as e:
-			print("FAILED")
-		"""
 	except Exception as e:
 		conn.rollback()
-		print("Problem inserting into db: " + str(e))
+		print("Problem with the 'addDevice' function: " + str(e))
 	conn.close()	
 
 def updateDevice(mycursor, conn, json_body, timestamp):
@@ -32,10 +21,9 @@ def updateDevice(mycursor, conn, json_body, timestamp):
 	try:
 		mycursor.execute(sql)
 		conn.commit()
-		#print ("Device updated. It was a "+json_body['whoIAm'])
 	except Exception as e:
 		conn.rollback()
-		print("Problem modifying db: " + str(e))
+		print("Problem with the 'updateDevice' function: " + str(e))
 	conn.close()
 
 def removeInactive(user,passwd, actualTime,updatingTime):
@@ -46,31 +34,31 @@ def removeInactive(user,passwd, actualTime,updatingTime):
 		try:
 			mycursor1.execute(sqlForm)
 			now=actualTime
-			sql_Select_Out= "SELECT whoIAm, TIMESTAMPDIFF(second,lastUpdate, '{}') as diffTime FROM credentialsServer WHERE TIMESTAMPDIFF(second,lastUpdate, '{}')>{}".format(now,now,updatingTime*3)
+			sql_Select_Out= "SELECT whoIAm, TIMESTAMPDIFF(second,lastUpdate, '{}') as diffTime FROM credentialsServer \
+			WHERE TIMESTAMPDIFF(second,lastUpdate, '{}')>{}".format(now,now,updatingTime*3)
 			try:
 				mycursor1.execute(sql_Select_Out)
 				myresult = mycursor1.fetchall()
 				for ob in myresult:
-					#print(ob[1])
 					sql_Delete_query = "DELETE FROM credentialsServer WHERE whoIAm='{}';".format(ob[0])
 					if ob[0]=='telegramBot':
 						initializedTelegramBot(mycursor1, conn)
 					try:
 						mycursor1.execute(sql_Delete_query)
 						conn.commit()
-						#print("Eliminated device")
 					except Exception as e:
 						conn.rollback()
-						print("Problem: something went wrong eliminating objects: " + str(e))
+						print("Problem with the 'removeInactive': something went wrong eliminating objects: " + str(e))
 			except Exception as e:
-				print("Could not select timestamp differences!: " + str(e))
+				print("Problem with the 'removeInactive': Could not select timestamp differences!: " + str(e))
 		except Exception as e:
-			print("Could not execute the first query!: " + str(e))
+			print("Problem with the 'removeInactive': Could not execute the first query!: " + str(e))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the 'removeInactive': " + str(err))
 
-def infoOnDevice(user, passwd,whoIAm):
+def infoOnDevice(user, passwd, whoIAm):
+	#Third parameter is the one that tells me who I actually searching
 	result1=""
 	result2=""
 	try:
@@ -84,16 +72,16 @@ def infoOnDevice(user, passwd,whoIAm):
 				mycursor1.execute(sql)
 				myresult = mycursor1.fetchall()
 			except Exception as e:
-				print("Problem selecting broker: " + str(e))
+				print("Problem with the function 'infoOnDevice': Problem selecting broker: " + str(e))
 				return result1,result2
 		except mysql.connector.Error as err:
-			print("Something went wrong: {}".format(err))
+			print("Problem with the function 'infoOnDevice': Something went wrong: {}".format(err))
 		if len(myresult)==1:
 			result1=myresult[0][0]
 			result2=myresult[0][1]
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the function 'infoOnDevice': " + str(err))
 	return result1,result2
 
 def initializedTelegramBot(mycursor1, conn):
@@ -109,33 +97,30 @@ def initializedTelegramBot(mycursor1, conn):
 				#print ("Devices updated. All avaiable")
 			except Exception as e:
 				conn.rollback()
-				print("Problem modifying db: " + str(e))
+				print("Problem with the function 'initializedTelegramBot': Problem modifying db: " + str(e))
 		except mysql.connector.Error as err:
-			print("Something went wrong: {}".format(err))
+			print("Problem with the function 'initializedTelegramBot': {}".format(err))
 		#conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
-
+		print("Problem with the function 'initializedTelegramBot': " + str(err))
+		
 def removeTelegramBot(user,passwd):
 	conn=mysql.connector.connect(host="localhost", user=user, passwd=passwd)
 	mycursor1=conn.cursor()
 	sqlForm="USE credentials_Database"
 	try:
 		mycursor1.execute(sqlForm)
-		
-		#print(self.actualTime)
 		sql_Delete_query = "DELETE FROM credentialsServer WHERE whoIAm='telegramBot';"
 		try:
 			mycursor1.execute(sql_Delete_query)
 			conn.commit()
-			#print("Eliminated device tb")
 			conn.close()
 		except Exception as e:
 			conn.rollback()
-			print("Problem: something went wrong eliminating objects: " + str(e))
+			print("Problem with the function 'removeTelegramBot': something went wrong eliminating objects: " + str(e))
 			conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the function 'removeTelegramBot': " + str(err))
 	initializedTelegramBot(mycursor1, conn)
 
 def foundTelegramBot(user,passwd):
@@ -156,17 +141,13 @@ def foundTelegramBot(user,passwd):
 					toReturn0=True
 					toReturn1=myresult[0][0]
 					toReturn2=myresult[0][1]
-				else:
-					#COMMENTATO DA ME!!
-					#print("TelegramBot not present yet!")
-					pass
 			except Exception as e:
 				print("Problem selecting db foundTelegramBot: " + str(e))
 		except mysql.connector.Error as err:
-			print("Something went wrong: {}".format(err))
+			print("Problem with the function 'foundTelegramBot': {}".format(err))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the function 'foundTelegramBot': " + str(err))
 	return toReturn0,toReturn1,toReturn2
 
 def updateOrNewInsert(user,passwd, json_body):
@@ -177,7 +158,6 @@ def updateOrNewInsert(user,passwd, json_body):
 		sqlForm="USE credentials_Database"
 		try:
 			mycursor1.execute(sqlForm)
-			print(json_body["whoIAm"])
 			sql = "SELECT ipServer, TCPPort FROM credentialsServer WHERE whoIAm='{}'".format(json_body["whoIAm"])
 			try:
 				mycursor1.execute(sql)
@@ -185,14 +165,14 @@ def updateOrNewInsert(user,passwd, json_body):
 			except Exception as e:
 				print("Problem selecting info updateOrNewInsert: " + str(e))
 		except mysql.connector.Error as err:
-			print("Something went wrong: {}".format(err))
+			print("Problem with the function 'updateOrNewInsert': {}".format(err))
 		if len(myresult)!=1:
 			result=0
 		else:
 			result=myresult[0]
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the function 'updateOrNewInsert': " + str(err))
 	return result
 
 def checkValidityPut(json_body):
@@ -222,7 +202,6 @@ def selectAvaiableEstimotes(user, passwd):
 		sqlForm="USE credentials_Database"
 		try:
 			mycursor1.execute(sqlForm)
-			#INVECE DI AFRE SELECT ALL HO MESSO SOLO NAME
 			sql_Select_Out= "SELECT name FROM estimotes WHERE avaiable=True"
 			try:
 				mycursor1.execute(sql_Select_Out)
@@ -230,15 +209,16 @@ def selectAvaiableEstimotes(user, passwd):
 				if len(toReturn)==0:
 					toReturn=[]
 			except Exception as e:
-				print("Query didn't succeed: " + str(e))
+				print("Problem with the 'selectAvaiableEstimotes': Query didn't succeed: " + str(e))
 		except Exception as e:
-			print("Could not execute the first query!: " + str(e))
+			print("Problem with the 'selectAvaiableEstimotes': " + str(e))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the 'selectAvaiableEstimotes': " + str(err))
 	return toReturn
 
 def selectChatIdAlreadyPresent(user, passwd):
+	#Function used for checking the validity of a new request for the estimotes
 	toReturn=False
 	try:
 		conn=mysql.connector.connect(host="localhost", user=user, passwd=passwd)
@@ -246,7 +226,6 @@ def selectChatIdAlreadyPresent(user, passwd):
 		sqlForm="USE credentials_Database"
 		try:
 			mycursor1.execute(sqlForm)
-			#INVECE DI AFRE SELECT ALL HO MESSO SOLO NAME
 			sql_Select_Out= "SELECT chatId FROM estimotes WHERE avaiable=False"
 			try:
 				mycursor1.execute(sql_Select_Out)
@@ -254,12 +233,12 @@ def selectChatIdAlreadyPresent(user, passwd):
 				if len(toReturn)==0:
 					toReturn=[]
 			except Exception as e:
-				print("Query didn't succeed: " + str(e))
+				print("Problem with the 'selectChatIdAlreadyPresent':Query didn't succeed: " + str(e))
 		except Exception as e:
-			print("Could not execute the first query!: " + str(e))
+			print("Problem with the 'selectChatIdAlreadyPresent': " + str(e))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the 'selectChatIdAlreadyPresent': " + str(err))
 	return toReturn
 
 def selectUnavaiableEstimotes(user, passwd):
@@ -277,12 +256,12 @@ def selectUnavaiableEstimotes(user, passwd):
 				if len(toReturn)==0:
 					toReturn=[]
 			except Exception as e:
-				print("Query didn't succeed: " + str(e))
+				print("Problem with the 'selectUnavaiableEstimotes': Query didn't succeed: " + str(e))
 		except Exception as e:
-			print("Could not execute the first query!: " + str(e))
+			print("Problem with the 'selectUnavaiableEstimotes': " + str(e))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the 'selectUnavaiableEstimotes': " + str(err))
 	return toReturn
 
 def selectUnavaiableMacEstimotes(user, passwd):
@@ -301,12 +280,12 @@ def selectUnavaiableMacEstimotes(user, passwd):
 				if len(toReturn)==0:
 					toReturn=False
 			except Exception as e:
-				print("Query didn't succeed: " + str(e))
+				print("Problem with the 'selectUnavaiableMacEstimotes': Query didn't succeed: " + str(e))
 		except Exception as e:
-			print("Could not execute the first query!: " + str(e))
+			print("Problem with the 'selectUnavaiableMacEstimotes': " + str(e))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the 'selectUnavaiableMacEstimotes': " + str(err))
 	return toReturn
 
 def searchForMacAdress(user, passwd, chatId):
@@ -324,12 +303,12 @@ def searchForMacAdress(user, passwd, chatId):
 				if len(toReturn)==0:
 					toReturn=False
 			except Exception as e:
-				print("Query didn't succeed: " + str(e))
+				print("Problem with the 'searchForMacAdress': Query didn't succeed: " + str(e))
 		except Exception as e:
-			print("Could not execute the first query!: " + str(e))
+			print("Problem with the 'searchForMacAdress': " + str(e))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the 'searchForMacAdress': " + str(err))
 	return toReturn
 
 def occupyChosenEstimote(user, passwd, choice, chatId):
@@ -344,15 +323,14 @@ def occupyChosenEstimote(user, passwd, choice, chatId):
 			try:
 				mycursor1.execute(sql)
 				conn.commit()
-				#print ("Device updated. Occupied estimote named "+choice)
 			except Exception as e:
 				conn.rollback()
-				print("Problem modifying db: " + str(e))
+				print("Problem with the 'occupyChosenEstimote': Problem modifying db: " + str(e))
 		except mysql.connector.Error as err:
-			print("Something went wrong: {}".format(err))
+			print("Problem with the 'occupyChosenEstimote': {}".format(err))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the 'occupyChosenEstimote': " + str(err))
 
 def freeChosenEstimote(user, passwd, chatId):
 	try:
@@ -368,16 +346,14 @@ def freeChosenEstimote(user, passwd, chatId):
 				#print ("Device updated. liberated estimote")
 			except Exception as e:
 				conn.rollback()
-				print("Problem modifying db: " + str(e))
+				print("Problem with the 'freeChosenEstimote': " + str(e))
 		except mysql.connector.Error as err:
-			print("Something went wrong: {}".format(err))
+			print("Problem with the 'freeChosenEstimote': {}".format(err))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))	
+		print("Problem with the 'freeChosenEstimote': " + str(err))	
 
 
-#FUNZIONE CHE NON AVEVO VISTO E HO RIFATTO MA: MAI USATA PRIMA?? ANYWAY QUELLA NUOVA USA IL CONNECTOR NON USER E PASSWORD 
-#COSI' PUO' ESSERE USATA ANCHE DA ADD DEVICE PERCHè NON CAPISCO IL MOTIVO MA IN QUESTA FUNZIONE IL CONNECTOER VIENE CREATO NEL CATALOG 
 def freeEstimotes(user,passwd):
 	try:
 		conn=mysql.connector.connect(host="localhost", user=user, passwd=passwd)
@@ -392,12 +368,12 @@ def freeEstimotes(user,passwd):
 				#print ("Devices updated.")
 			except Exception as e:
 				conn.rollback()
-				print("Problem modifying db: " + str(e))
+				print("Problem with the 'freeEstimotes': Problem modifying db: " + str(e))
 		except mysql.connector.Error as err:
-			print("Something went wrong: {}".format(err))
+			print("Problem with the 'freeEstimotes': {}".format(err))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))	
+		print("Problem with the 'freeEstimotes': " + str(err))	
 
 def nameExist(user,passwd,choice):
 	toReturn=False
@@ -414,12 +390,12 @@ def nameExist(user,passwd,choice):
 				if len(toReturn)==0:
 					toReturn=False
 			except Exception as e:
-				print("Query didn't succeed: " + str(e))
+				print("Problem with the 'nameExist' " + str(e))
 		except Exception as e:
-			print("Could not execute the first query!: " + str(e))
+			print("Problem with the 'nameExist': " + str(e))
 		conn.close()
 	except mysql.connector.Error as err:
-		print("Problem: something went wrong here!: " + str(err))
+		print("Problem with the 'nameExist': " + str(err))
 	return toReturn	
 
 def checkValidityEstimote(user,passwd,whatPut,choice,chat_id):

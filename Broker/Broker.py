@@ -7,13 +7,10 @@ import requests
 
 class BrokerServer(object):
 	def __init__(self):
-		file_content=json.load(open('../confFile.json'))
 		file_content2=json.load(open('confFileBroker.json'))
-		self.catalogAddress=file_content.get('ipCatalog')
-		self.portAdress=file_content2.get('brokerPort')
-		self.catalogPort=int(file_content.get('catalogPort'))
-		#self.catalogPort=int(file_content2.get('catalogPort'))
-		#self.catalogAddress=file_content2.get('ipCatalog')		
+		self.catalogPort=int(file_content2.get('catalogPort'))
+		self.catalogAddress=file_content2.get('ipCatalog')	
+		self.portAdress=int(file_content2.get('brokerPort'))	
 		s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		s.connect(("8.8.8.8", 80))
 		self.address=s.getsockname()[0]
@@ -26,7 +23,7 @@ if __name__ == '__main__':
 		found=False
 		for proc in psutil.process_iter():
 			try:
-				 # Get process name & pid from process object.
+				# Get process name & pid from process object.
 				processName = proc.name()
 				if processName=="mosquitto":
 					found=True
@@ -35,7 +32,7 @@ if __name__ == '__main__':
 				pass
 		if found==True:
 			try:
-				body={'whatPut':1,'IP':brokerServer.address,'port':brokerServer.portAdress, 'last_update':0, 'whoIAm':'Broker', 'category':'broker','field':''}
+				body={'whatPut':1,'IP':brokerServer.address,'port':brokerServer.portAdress, 'last_update':0, 'whoIAm':'BrokerServer', 'category':'broker','field':''}
 				r=requests.put('http://'+str(brokerServer.catalogAddress)+':'+str(brokerServer.catalogPort),json=body)
 				timeSleep=r.json()['timeToSleep']
 			except requests.exceptions.RequestException as e:

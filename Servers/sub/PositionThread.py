@@ -14,9 +14,9 @@ class GetWithThread(threading.Thread):
 		self.DBPort=DBPort
 
 	def run(self):
-		#print("Started Process!")
+		print("Started Process!")
 		self.sendRequestAndUpdate(self.typeOfRequest,self.option,self.link1,self.link2,self.DBAddress,self.DBPort)		
-		print("Updated {}!".format(self.typeOfRequest))
+		print("Finished doing {}!".format(self.typeOfRequest))
 		return True
 
 	def createAnswer(self,listOfPositions,option):
@@ -97,26 +97,26 @@ class GetWithThread(threading.Thread):
 				statsWithRep=toReturnFullPeriod["statsPerRoomRep"]
 				statsNoRep=toReturnFullPeriod["statsPerRoomNoRep"]
 				realTimePositioning=toReturnFullPeriod["realTimePositioning"]
-				#self.printingPart(statsWithRep,statsNoRep)
+				self.printingPart(statsWithRep,statsNoRep)
 				toSend1,toSend2=self.sortingPart(statsWithRep)
 				body={'nrooms': len(statsWithRep.keys()), 'value': toSend1,'scores':toSend2}
-				#print("****")
-				#print(body)
+				print("****")
+				print(body)
 				#Exception for the postRequest
 				try:
 					p=requests.post('http://dweet.io/dweet/for/'+str(firstLink),json=body)
-					#print(p)
+					print(p)
 				except Exception as e:
 					try:
 						print("Status code: "+str(p.status_code))
 						print("Status code: "+str(p.reason))
 					except:pass
 					print(e)
-				#print("Finished to send the primary data with TYPE: "+(typeOfRequest))
+				print("Finished to send the primary data with TYPE: "+(typeOfRequest))
 				toSend1,toSend2=self.sortingPart(statsNoRep)
 				body={'nrooms': len(statsNoRep.keys()), 'value': toSend1,'scores':toSend2}
-				#print("****")
-				#print(body)
+				print("****")
+				print(body)
 				#Exception for the postRequest
 				try:
 					p=requests.post('http://dweet.io/dweet/for/'+str(secondLink),json=body)
@@ -126,9 +126,9 @@ class GetWithThread(threading.Thread):
 						print("Status code: "+str(p.reason))
 					except:pass
 					print(e)
-				#print("Finished to send the secondary data with TYPE: "+(typeOfRequest))
+				print("Finished to send the secondary data with TYPE: "+(typeOfRequest))
 			else:
-				print("No available data!")
+				print("NO AVAIABLE DATA!")
 
 		#Exception for the getRequest
 		except Exception as e:

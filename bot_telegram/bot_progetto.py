@@ -9,12 +9,6 @@ import json
 import socket
 import time
 import sub.functions_bot as fb
-'''
-PATH=2
-PATH2=1
-VISIT= 3
-INFO=4
-POPULAR_PATHS=6'''
 
 PAINTER,PATH, PATH2, VISIT, INFO, POPULAR_PATHS=range(6)
 
@@ -24,10 +18,11 @@ class TelegramRest(object):
 		pass
 		
 	def GET(self, *uri, **params):
-		if len(list(params.values()))!=4 or list(params.keys())[0]!="ipWhereIAm" or list(params.keys())[1]!="portWhereIAm" or list(params.keys())[2]!="ipGeneratePath" or list(params.keys())[3]!="portGeneratePath":
+		if len(list(params.values()))!=4 or list(params.keys())[0]!="ipWhereIAm" \
+		or list(params.keys())[1]!="portWhereIAm" or list(params.keys())[2]!="ipGeneratePath" \
+		or list(params.keys())[3]!="portGeneratePath":
 			raise cherrypy.HTTPError(400, "ERROR: error with the parameters")
 		else:
-
 			telegram_bot.ipWhereIAm=str(params['ipWhereIAm'])
 			telegram_bot.portWhereIAm=str(params['portWhereIAm'])
 			telegram_bot.ipGeneratePath=str(params['ipGeneratePath'])
@@ -57,7 +52,6 @@ class TelegramRoom(object):
 		if updated==False:
 			self.rooms.append(r)
 
-
 	def getRoom(self, chat_id):
 		found=False
 
@@ -68,19 +62,14 @@ class TelegramRoom(object):
 
 		return found
 
-
 class TelegramBot(object):
 
 	def __init__(self):
-		#file_content=json.load(open('D:\Politecnico\Magistrale\Anno 1\IoT\[IoT]  Project\Code\Code\confFile.json'))
-		#file_content2=json.load(open('D:\Politecnico\Magistrale\Anno 1\IoT\[IoT]  Project\Code\Code\\bot_telegram\confFileBot.json'))
-		#self.roomInfo=json.load(open('D:\Politecnico\Magistrale\Anno 1\IoT\[IoT]  Project\Code\Code\\bot_telegram\sub\\roomDescriptions.json'))
-		file_content=json.load(open('../confFile.json'))
 		file_content2=json.load(open('confFileBot.json'))
-		#pathInfo=json.load(open('sub/roomInfo.json'))
+		pathInfo=json.load(open('sub/roomInfo.json'))
 		self.roomInfo=json.load(open('sub/roomDescriptions.json'))
 		
-		self.catalogAddress=file_content.get('ipCatalog')
+		self.catalogAddress=file_content2.get('ipCatalog')
 		self.catalogPort=file_content2.get('catalogPort')
 		self.token=file_content2.get('token')
 		self.ipWhereIAm=''
@@ -88,7 +77,6 @@ class TelegramBot(object):
 		self.ipGeneratePath=''
 		self.portGeneratePath=''
 		self.portTelegram=int(file_content2.get('telegramPort'))
-
 		s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		s.connect(("localhost", 80))
 		self.address=s.getsockname()[0]
@@ -115,13 +103,9 @@ class TelegramBot(object):
 			self.error()
 		return PAINTER
 
-
-			
-
 	def unknown(self, update, context):
-		context.bot.send_message(chat_id=update.effective_chat.id, text='I could not understand the command you typed. For this bot all you need to do is to push the buttons in the chat. If you want to cancel the session click /cancel.\n You wrote: {}'.format(update.message.text))
+		context.bot.send_message(chat_id=update.effective_chat.id, text='I could not understand the command you typed. For this bot all you need to do is to push the buttons in the chat. If you want to cancel the session type /cancel.\n You wrote: {}'.format(update.message.text))
 		
-
 	def error(self, update, context):
 		logger = logging.getLogger(__name__)
 		logger.warning('Update "%s" caused error "%s"', update, context.error)
@@ -261,7 +245,6 @@ class TelegramBot(object):
 				print(e)
 				return PATH
 
-		'''set stop parameter based on number of iterations'''
 		stop_it=int(len(sorted_d))
 		if (query.data)=='quick':
 			stop_it=int(len(sorted_d)/2)-1
@@ -273,13 +256,13 @@ class TelegramBot(object):
 			stop_it=int((len(sorted_d)))
 
 		if stop_it!=1:
-			context.bot.send_message(chat_id=update.effective_chat.id, text='For a {} visit I suggest {} rooms. Let me check the most popular ones.'.format(query.data, stop_it))
+			context.bot.send_message(chat_id=update.effective_chat.id, text='For a {} I suggest {} rooms. Let me check the most popular ones.'.format(query.data, stop_it))
 			pass
 			time.sleep(2)
 			pass
 			context.bot.send_message(chat_id=update.effective_chat.id, text='So, you should see in this order:')
 		else:
-			context.bot.send_message(chat_id=update.effective_chat.id, text='For a {} I visit suggest {} room. Let me check the most popular one.'.format(query.data, stop_it))
+			context.bot.send_message(chat_id=update.effective_chat.id, text='For a {} I suggest {} room. Let me check the most popular one.'.format(query.data, stop_it))
 			pass
 			time.sleep(2)
 			pass

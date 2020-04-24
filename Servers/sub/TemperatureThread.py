@@ -11,9 +11,9 @@ class GetWithThread(threading.Thread):
 		self.DBPort=DBPort
 
 	def run(self):
-		#print("Started Process!")
+		print("Started Process!")
 		self.printAndUpdate(self.typeOfRequest,self.link,self.DBAddress,self.DBPort)		
-		print("Updated {}!".format(self.typeOfRequest))
+		print("Finished doing {}!".format(self.typeOfRequest))
 		return True
 
 	def createAnswer(self,listOfTemperatures):
@@ -53,14 +53,10 @@ class GetWithThread(threading.Thread):
 					top=dictionaryTemperatures[room]['max']
 					und=dictionaryTemperatures[room]['min']
 					last_time=str(dictionaryTemperatures[room]['lastRelevation'])
-					#print(last_time)
 					last_index=list(dictionaryTemperatures[room]['dates']).index(last_time)
-					#print(last_index)
 					last=dictionaryTemperatures[room]['all'][last_index]
-					#print(last_temp)
 					body={'room':str(room),'max':str(top), 'min':str(und), 'avg':str(avg), 'last':str(last)}
-					#print("w")
-					#print(body)
+					print(body)
 					try:
 						p=requests.post('http://dweet.io/dweet/for/'+str(link),json=body)
 					#Exception for the postRequest
@@ -71,11 +67,11 @@ class GetWithThread(threading.Thread):
 						except:pass
 						print(e)	
 			else:
-				print("No available data for {}!".format(self.typeOfRequest))
+				print("NO AVAIABLE DATA!")
 		#Exception for the getRequest
 		except Exception as e:
 			try:
 				print("Status code: "+str(rdb.status_code))
 				print("Status code: "+str(rdb.reason))
 			except:pass
-			print(e)	
+			print(e)		
