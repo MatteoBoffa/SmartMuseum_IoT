@@ -1,7 +1,7 @@
 # IoT project: Smart Museum
 
 Project for the management of a Smart Museum, with services for the visitors and for the museum's curators.
-To have a full description of the functionalities and of the structure of the system, take a look at the videos linked below.
+To have a full description of the functionalities and the structure of the system, take a look at the videos linked below.
 
 Notes to run the project:
 - all the entities needed for the functioning of the system are included in folders Catalog, DB_server, Servers, Broker, Sensors, bot_telegram
