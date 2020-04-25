@@ -6,7 +6,7 @@ To have a full description of the functionalities and the structure of the syste
 Notes to run the project:
 - all the entities needed for the functioning of the system are included in folders Catalog, DB_server, Servers, Broker, Sensors, bot_telegram
 - the Freeboard pages can be easily built importing the two dashboards present in the folder Freeboard
-- the Sensors folder is made of files to use true sensors placed on a Raspberry Pi and files used to simulate the behavior of such sensors
+- the Sensors folder is made of files to use true sensors placed on a Raspberry Pi and files to simulate the behavior of such sensors
 - each entity must know from its config file the IP address of the catalog (all files are provided with a custom one that can be easily modified)
 - two SQL databases are required: instructions on their names and tables' composition can be found in the DBs folder
 - the provided version works with five Estimote Beacons whose MAC addresses are inserted inside one of the databases; to add some more or change them, just modify such data in the DB
